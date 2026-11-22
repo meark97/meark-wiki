@@ -1,0 +1,15 @@
+# 文本文件在仓库内统一用 LF（checkout 不强制转回 CRLF）
+* text=auto eol=lf
+
+# 以下类型视为二进制，不做行尾转换
+*.jpg    binary
+*.jpeg   binary
+*.png    binary
+*.gif    binary
+*.webp   binary
+*.avif   binary
+*.ico    binary
+*.woff   binary
+*.woff2  binary
+*.ttf    binary
+*.eot    binary
