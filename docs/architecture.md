@@ -24,7 +24,7 @@
 src/content/knowledge/<分类>/<文章名>.md
 ```
 
-- **分类即目录名**：`hr`（人事行政）/ `frontend`（前端技术）/ `ai-tools`（AI 与工具）/ `general`（通用知识）
+- **分类即目录名**：`frontend`（前端技术）/ `ai-tools`（AI 与工具）/ `general`（通用知识）
 - 新增分类 = 新建目录 + 在 `src/lib/knowledge.ts` 的 `CATEGORIES` 登记
 - 每篇 frontmatter（由 `src/content.config.ts` 校验）：
 

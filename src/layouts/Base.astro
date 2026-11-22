@@ -5,15 +5,14 @@ interface Props {
   title?: string;
   description?: string;
   activeCategory?: string;
-  /** 首页 hero 全屏时不显示顶部导航 */
-  hideNav?: boolean;
+  isHome?: boolean;
 }
 
 const {
   title = 'meark-wiki · 个人知识库',
   description = '沉淀学过与搜过的知识',
   activeCategory,
-  hideNav = false,
+  isHome = false,
 } = Astro.props;
 ---
 
@@ -26,26 +25,25 @@ const {
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml" />
   </head>
   <body>
-    {!hideNav && (
-      <header class="site-header">
-        <div class="nav-inner">
-          <a class="wordmark" href="/">meark-wiki</a>
-          <nav class="nav-links" aria-label="主导航">
-            <a href="/knowledge/" class:list={{ 'nav-link': true, active: activeCategory === '' }}>全部知识</a>
-            {CATEGORIES.map((c) => (
-              <a
-                href={`/knowledge/${c.key}/`}
-                class:list={{ 'nav-link': true, active: activeCategory === c.key }}
-              >
-                {c.name}
-              </a>
-            ))}
-          </nav>
-        </div>
-      </header>
-    )}
+    <header class="site-header">
+      <div class="nav-inner">
+        <a class:list={['wordmark', { active: isHome }]} href="/">meark-wiki</a>
+        <nav class="nav-links" aria-label="主导航">
+          <a href="/knowledge/" class:list={{ 'nav-link': true, active: activeCategory === '' }}>全部</a>
+          {CATEGORIES.map((c) => (
+            <a
+              href={`/knowledge/${c.key}/`}
+              class:list={{ 'nav-link': true, active: activeCategory === c.key }}
+            >
+              {c.name}
+            </a>
+          ))}
+        </nav>
+      </div>
+    </header>
 
     <main>
       <slot />
@@ -53,8 +51,12 @@ const {
 
     <footer class="site-footer">
       <div class="footer-inner">
-        <span class="footer-mark">meark-wiki</span>
-        <span class="footer-note">meark.cn 网站系 · GitHub Pages</span>
+        <span>meark-wiki</span>
+        <nav class="footer-links" aria-label="站点系">
+          <a href="https://info.meark.cn">主站</a>
+          <a href="https://blocks.meark.cn">积木库</a>
+          <a href="/">知识库</a>
+        </nav>
       </div>
     </footer>
   </body>
@@ -62,97 +64,179 @@ const {
 
 <style is:global>
   :root {
-    /* Walnut and tan —— design-taste 方向定稿 */
-    --bg: #2b2216;
-    --surface: #382d1e;
-    --ink: #e4e2da;
-    --muted: #a39a8b;
-    --accent: #bda38b;
-    --accent-ink: #2b2216;
-    --field: #cbb293;
-    --field-ink: #1c150d;
-    --field-muted: #45382a;
+    /* ===== 文字三级色 ===== */
+    --text-primary: #1d2129;
+    --text-secondary: #4e5969;
+    --text-tertiary: #86909c;
+    --text-quaternary: #a9aeb8;
 
-    --font-display: ui-sans-serif, system-ui, -apple-system, 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
-    --font-body: Georgia, 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+    /* ===== 表面分层 ===== */
+    --bg-page: #f2f3f5;
+    --bg-container: #ffffff;
+    --bg-sunken: #eef0f3;
+    --bg-muted: #f2f3f5;
 
-    --max-width: 1080px;
-    --gap: 1.5rem;
-    --radius: 0; /* 全站直角，印刷物气质 */
+    /* ===== 边框 ===== */
+    --border-subtle: #e5e6eb;
+    --border-default: #cdd1d9;
+
+    /* ===== 品牌色 ===== */
+    --brand-5: #4080ff;
+    --brand-6: #165dff;
+    --brand-7: #0e42d2;
+
+    /* ===== 字号阶梯 ===== */
+    --text-xs: 12px;   --text-xs-lh: 20px;
+    --text-sm: 13px;   --text-sm-lh: 21px;
+    --text-base: 14px; --text-base-lh: 22px;
+    --text-md: 16px;   --text-md-lh: 24px;
+    --text-lg: 20px;   --text-lg-lh: 28px;
+    --text-xl: 24px;   --text-xl-lh: 32px;
+    --text-2xl: 30px;  --text-2xl-lh: 38px;
+
+    --fw-regular: 400;
+    --fw-medium: 500;
+    --fw-semibold: 600;
+
+    /* ===== 间距（4 的倍数） ===== */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+
+    /* ===== 圆角 ===== */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+
+    /* ===== 阴影（克制） ===== */
+    --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+    --shadow-md: 0 2px 4px -2px rgba(16, 24, 40, 0.06), 0 4px 8px -2px rgba(16, 24, 40, 0.08);
+
+    /* ===== 动效 ===== */
+    --duration-fast: 100ms;
+    --duration-base: 200ms;
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+    --font-sans: ui-sans-serif, system-ui, -apple-system, 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+    --font-serif: Georgia, 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+
+    --max-width: 1120px;
+    --reading-width: 720px;
   }
 
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
     margin: 0;
-    font-family: var(--font-body);
-    font-size: 17px;
-    line-height: 1.7;
-    color: var(--ink);
-    background: var(--bg);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--text-base-lh);
+    font-weight: var(--fw-regular);
+    color: var(--text-primary);
+    background: var(--bg-page);
     -webkit-font-smoothing: antialiased;
-    overflow-x: clip;
   }
-  a { color: inherit; }
+  a { color: inherit; text-decoration: none; }
   img { max-width: 100%; display: block; }
 
-  /* 顶部导航：无边框、无玻璃，纯文字条 */
-  .site-header { padding: 0 var(--gap); }
+  /* ===== 顶部导航 ===== */
+  .site-header {
+    background: var(--bg-container);
+    border-bottom: 1px solid var(--border-subtle);
+  }
   .nav-inner {
     max-width: var(--max-width);
     margin: 0 auto;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
-    gap: 1.25rem;
-    padding: 1.4rem 0;
+    gap: var(--space-6);
+    padding: var(--space-4) var(--space-6);
   }
   .wordmark {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 1.3rem;
-    letter-spacing: -0.02em;
-    text-decoration: none;
-    color: var(--ink);
+    font-size: var(--text-md);
+    font-weight: var(--fw-semibold);
+    color: var(--text-primary);
   }
-  .nav-links { display: flex; gap: 1.4rem; flex-wrap: wrap; }
+  .wordmark.active {
+    color: var(--brand-6);
+  }
+  .nav-links {
+    display: flex;
+    gap: var(--space-6);
+  }
   .nav-link {
-    text-decoration: none;
-    color: var(--muted);
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: 0.95rem;
+    font-size: var(--text-sm);
+    font-weight: var(--fw-medium);
+    color: var(--text-secondary);
+    padding: var(--space-2) 0;
+    transition: color var(--duration-fast) var(--ease-standard);
   }
-  .nav-link:hover { color: var(--ink); }
-  .nav-link.active { color: var(--accent); }
+  .nav-link:hover { color: var(--text-primary); }
+  .nav-link.active {
+    color: var(--brand-6);
+    font-weight: var(--fw-semibold);
+  }
+  .nav-link:focus-visible {
+    outline: 2px solid var(--brand-6);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
 
-  main { max-width: var(--max-width); margin: 0 auto; padding: 3rem var(--gap) 4rem; }
+  /* ===== 主内容区 ===== */
+  main {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-6) var(--space-16);
+  }
 
-  /* 页脚：物件背面，名称放大收尾 */
-  .site-footer { padding: 0 var(--gap) 3.5rem; }
+  /* ===== 页脚 ===== */
+  .site-footer {
+    background: var(--bg-container);
+    border-top: 1px solid var(--border-subtle);
+    margin-top: var(--space-12);
+  }
   .footer-inner {
     max-width: var(--max-width);
     margin: 0 auto;
-    padding-top: 2.5rem;
-    border-top: none;
+    padding: var(--space-6);
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
+    align-items: center;
+    gap: var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
   }
-  .footer-mark {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 1.9rem;
-    letter-spacing: -0.03em;
-    color: var(--ink);
+  .footer-links {
+    display: flex;
+    gap: var(--space-5);
   }
-  .footer-note { color: var(--muted); font-size: 0.9rem; }
+  .footer-links a {
+    color: var(--text-secondary);
+  }
+  .footer-links a:hover {
+    color: var(--brand-6);
+  }
 
   @media (max-width: 640px) {
-    .nav-inner { flex-direction: column; align-items: flex-start; gap: 0.6rem; }
-    .nav-links { gap: 1rem; }
-    main { padding-top: 2rem; }
-    .footer-inner { flex-direction: column; gap: 0.4rem; }
+    .nav-inner {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-2);
+    }
+    .nav-links { gap: var(--space-4); }
+    main { padding: var(--space-6) var(--space-4) var(--space-12); }
+    .footer-inner {
+      flex-direction: column;
+      gap: var(--space-1);
+    }
   }
 </style>

@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # design-taste working files
 .taste-skill/
+
+# 早期设计原型对比件与截图（不入库）
+demo/

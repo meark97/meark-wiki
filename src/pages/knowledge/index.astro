@@ -14,17 +14,15 @@ const grouped = CATEGORIES.map((c) => ({
 
 <Base title="全部知识 · meark-wiki" activeCategory="">
   <section class="page-head">
-    <h1>全部知识</h1>
-    <p>共 {sorted.length} 篇，按分类归档。</p>
+    <h1 class="page-title">全部知识</h1>
+    <p class="page-desc">共 {sorted.length} 篇，按分类归档。</p>
   </section>
-
-  <div class="banner" aria-hidden="true"></div>
 
   {grouped.map((g) => (
     <section class="cat-block">
       <div class="cat-head">
-        <h2>{g.category.name}</h2>
-        <a href={`/knowledge/${g.category.key}/`}>分类页 →</a>
+        <h2 class="cat-title">{g.category.name}</h2>
+        <a class="cat-more" href={`/knowledge/${g.category.key}/`}>分类页 →</a>
       </div>
       <ul class="post-list">
         {g.items.map((p) => (
@@ -33,7 +31,7 @@ const grouped = CATEGORIES.map((c) => ({
               <span class="post-date">{p.data.pubDate.toISOString().slice(0, 10)}</span>
               <span class="post-title">{p.data.title}</span>
               {p.data.tags.length > 0 && (
-                <span class="post-tags">{p.data.tags.join(' · ')}</span>
+                <span class="post-tags">{p.data.tags.map((t) => `#${t}`).join('  ')}</span>
               )}
             </a>
           </li>
@@ -44,69 +42,105 @@ const grouped = CATEGORIES.map((c) => ({
 </Base>
 
 <style>
-  .page-head { margin-bottom: 2rem; }
-  .page-head h1 {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(2rem, 5vw, 3rem);
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-    margin: 0 0 0.5rem;
+  .page-head {
+    margin-bottom: var(--space-8);
   }
-  .page-head p { color: var(--muted); margin: 0; }
-
-  /* 图书馆纵深横幅 */
-  .banner {
-    height: clamp(160px, 30vw, 260px);
-    margin: 2rem 0 3.5rem;
-    background: url('/images/library-aisle.jpg') center/cover no-repeat;
-    filter: brightness(0.8);
+  .page-title {
+    font-size: var(--text-2xl);
+    line-height: var(--text-2xl-lh);
+    font-weight: var(--fw-semibold);
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+    margin: 0 0 var(--space-2);
+  }
+  .page-desc {
+    font-size: var(--text-md);
+    line-height: var(--text-md-lh);
+    color: var(--text-secondary);
+    margin: 0;
   }
 
-  .cat-block { margin-bottom: 3rem; }
+  .cat-block {
+    margin-bottom: var(--space-10);
+  }
   .cat-head {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: var(--space-4);
+    margin-bottom: var(--space-3);
   }
-  .cat-head h2 {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 1.35rem;
+  .cat-title {
+    font-size: var(--text-lg);
+    line-height: var(--text-lg-lh);
+    font-weight: var(--fw-semibold);
+    color: var(--text-primary);
     margin: 0;
-    letter-spacing: -0.01em;
   }
-  .cat-head a { color: var(--accent); text-decoration: none; font-size: 0.92rem; }
-  .cat-head a:hover { text-decoration: underline; }
+  .cat-more {
+    font-size: var(--text-sm);
+    line-height: var(--text-sm-lh);
+    font-weight: var(--fw-medium);
+    color: var(--brand-6);
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .cat-more:hover { color: var(--brand-7); }
+  .cat-more:focus-visible {
+    outline: 2px solid var(--brand-6);
+    outline-offset: 2px;
+  }
 
   .post-list {
     list-style: none;
     margin: 0;
-    padding: 0.5rem 1.75rem;
-    background: var(--field);
-    color: var(--field-ink);
+    padding: 0;
+    background: var(--bg-container);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
+    overflow: hidden;
   }
   .post-item {
     display: grid;
-    grid-template-columns: 110px 1fr auto;
+    grid-template-columns: 100px 1fr auto;
     align-items: baseline;
-    gap: 1.25rem;
-    padding: 0.95rem 0.75rem;
-    text-decoration: none;
-    color: var(--field-ink);
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-5);
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background var(--duration-fast) var(--ease-standard);
   }
-  .post-item:hover { background: rgba(28, 21, 13, 0.06); }
-  .post-item:last-child { padding-bottom: 0.3rem; }
-  .post-item:hover .post-title { text-decoration: underline; text-underline-offset: 4px; }
-  .post-date { font-family: var(--font-display); font-weight: 500; font-size: 0.88rem; color: var(--field-muted); }
-  .post-title { font-weight: 600; font-size: 1.02rem; }
-  .post-tags { font-family: var(--font-display); font-weight: 500; font-size: 0.82rem; color: var(--field-muted); }
+  .post-item:last-child { border-bottom: none; }
+  .post-item:hover { background: var(--bg-sunken); }
+  .post-item:focus-visible {
+    outline: 2px solid var(--brand-6);
+    outline-offset: -2px;
+  }
+  .post-date {
+    font-size: var(--text-sm);
+    line-height: var(--text-sm-lh);
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+  .post-title {
+    font-size: var(--text-base);
+    line-height: var(--text-base-lh);
+    font-weight: var(--fw-medium);
+    color: var(--text-primary);
+  }
+  .post-tags {
+    font-size: var(--text-xs);
+    line-height: var(--text-xs-lh);
+    color: var(--text-tertiary);
+    white-space: nowrap;
+  }
 
   @media (max-width: 640px) {
-    .post-item { grid-template-columns: 1fr auto; }
-    .post-date { font-size: 0.82rem; }
-    .post-list { padding: 0.4rem 1.25rem; }
+    .post-item {
+      grid-template-columns: 1fr auto;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+    }
+    .post-date { grid-column: 1 / -1; order: 3; }
+    .post-title { order: 1; }
+    .post-tags { order: 2; }
   }
 </style>

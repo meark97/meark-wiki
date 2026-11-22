@@ -5,9 +5,7 @@ import { CATEGORIES } from '../lib/knowledge';
 
 const posts = await getCollection('knowledge');
 const sorted = [...posts].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-const recent = sorted.slice(0, 5);
-const total = posts.length;
-const lastUpdated = sorted[0]?.data.pubDate.toISOString().slice(0, 10) ?? '—';
+const recent = sorted.slice(0, 6);
 
 const counts = new Map<string, number>();
 for (const p of posts) {
@@ -16,339 +14,214 @@ for (const p of posts) {
 }
 ---
 
-<Base title="meark-wiki · 个人知识库" description="沉淀学过与搜过的知识" hideNav>
-  <!-- Hero：书架占满首屏，纸页从底部升起 -->
-  <section class="hero" id="hero">
-    <img class="hero-bg" src="/images/hero-bookshelf.jpg" alt="" width="2730" height="1536" fetchpriority="high" />
-    <div class="hero-paper">
-      <h1 class="hero-title">
-        meark-wiki<br />
-        <span class="hero-sub">个人知识库</span>
-      </h1>
-      <p class="hero-note">
-        把自己学过、以及通过 AI 搜索后总结的知识，一点点沉淀成体系。
-      </p>
-      <div class="hero-meta">
-        <span>{total} 篇文章</span>
-        <span aria-hidden="true">·</span>
-        <span>{CATEGORIES.length} 个分类</span>
-        <span aria-hidden="true">·</span>
-        <span>更新于 {lastUpdated}</span>
-      </div>
-      <div class="hero-actions">
-        <a class="btn" href="/knowledge/">浏览全部知识</a>
-        <a class="textlink" href="#stats">先看看 ↓</a>
-      </div>
+<Base title="meark-wiki · 个人知识库" description="沉淀学过与搜过的知识" isHome>
+  <!-- 简短介绍 -->
+  <section class="intro">
+    <h1 class="intro-title">meark-wiki</h1>
+    <p class="intro-sub">把学过、以及通过 AI 搜索后总结的知识，沉淀成自己的体系。</p>
+    <p class="intro-stats">共 {posts.length} 篇文章 · {CATEGORIES.length} 个分类</p>
+  </section>
+
+  <!-- 宫格分类卡片 -->
+  <section class="section">
+    <h2 class="section-title">知识分类</h2>
+    <div class="cat-grid">
+      {CATEGORIES.map((c) => (
+        <a class="cat-card" href={`/knowledge/${c.key}/`}>
+          <div class="cat-card-head">
+            <span class="cat-card-name">{c.name}</span>
+            <span class="cat-card-count">{counts.get(c.key) ?? 0} 篇</span>
+          </div>
+          <p class="cat-card-desc">{c.description}</p>
+        </a>
+      ))}
     </div>
   </section>
 
-  <!-- Stats：超大数字 -->
-  <section class="stats reveal" id="stats">
-    <div class="stat reveal-d">
-      <span class="stat-num">{total}</span>
-      <span class="stat-label">篇文章</span>
+  <!-- 最近更新列表 -->
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">最近更新</h2>
+      <a class="section-more" href="/knowledge/">查看全部 →</a>
     </div>
-    <div class="stat reveal-d">
-      <span class="stat-num">{CATEGORIES.length}</span>
-      <span class="stat-label">个分类</span>
-    </div>
-    <div class="stat reveal-d">
-      <span class="stat-num stat-date">{lastUpdated}</span>
-      <span class="stat-label">最近更新</span>
-    </div>
-  </section>
-
-  <!-- 分类：一张整纸 -->
-  <section class="categories reveal" id="categories">
-    <div class="sheet-head reveal-d">
-      <h2>知识分类</h2>
-      <p>按领域归档，随学随记。</p>
-    </div>
-    <div class="cat-sheet reveal-d">
-      <div class="cat-list">
-        {CATEGORIES.map((c) => (
-          <a class="cat-row" href={`/knowledge/${c.key}/`}>
-            <span class="cat-name">{c.name}</span>
-            <span class="cat-desc">{c.description}</span>
-            <span class="cat-count">{counts.get(c.key) ?? 0} 篇</span>
-          </a>
-        ))}
-      </div>
-      <img class="sheet-img" src="/images/paper-desk.jpg" alt="书桌上摊开的纸页与钢笔" width="720" height="540" loading="lazy" />
-    </div>
-  </section>
-
-  <!-- 最近更新：另一张整纸 -->
-  <section class="recent reveal">
-    <div class="sheet-head reveal-d">
-      <h2>最近更新</h2>
-      <p>最新的沉淀。</p>
-    </div>
-    <div class="recent-sheet reveal-d">
-      <img class="sheet-img" src="/images/desk-writing.jpg" alt="夜晚书桌边握着钢笔书写" width="720" height="540" loading="lazy" />
-      <ul class="post-list">
-        {recent.map((p) => {
-          const [cat] = p.slug.split('/');
-          const catName = CATEGORIES.find((c) => c.key === cat)?.name ?? cat;
-          return (
-            <li>
-              <a class="post-item" href={`/knowledge/${p.slug}/`}>
-                <span class="post-date">{p.data.pubDate.toISOString().slice(0, 10)}</span>
-                <span class="post-title">{p.data.title}</span>
-                <span class="post-cat">{catName}</span>
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  </section>
-
-  <!-- 书库纵深横幅 -->
-  <section class="band reveal" aria-label="书库">
-    <img src="/images/library-aisle.jpg" alt="图书馆走廊纵深，暖灯下的书架" width="2730" height="1536" loading="lazy" />
+    <ul class="recent-list">
+      {recent.map((p) => {
+        const [cat] = p.slug.split('/');
+        const catName = CATEGORIES.find((c) => c.key === cat)?.name ?? cat;
+        return (
+          <li>
+            <a class="recent-item" href={`/knowledge/${p.slug}/`}>
+              <span class="recent-date">{p.data.pubDate.toISOString().slice(0, 10)}</span>
+              <span class="recent-title">{p.data.title}</span>
+              <span class="recent-cat">{catName}</span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
   </section>
 </Base>
 
 <style>
-  /* ===== Hero ===== */
-  .hero {
-    position: relative;
-    min-height: 100vh;
-    display: flex;
-    align-items: flex-end;
-    background: var(--bg);
-    overflow: hidden;
+  /* ===== 介绍区 ===== */
+  .intro {
+    margin-bottom: var(--space-10);
   }
-  .hero-bg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: brightness(0.78) contrast(1.05);
-    animation: hero-zoom 26s ease-in-out infinite alternate;
-    transform-origin: center;
+  .intro-title {
+    font-size: var(--text-2xl);
+    line-height: var(--text-2xl-lh);
+    font-weight: var(--fw-semibold);
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+    margin: 0 0 var(--space-2);
   }
-  @keyframes hero-zoom {
-    from { transform: scale(1); }
-    to { transform: scale(1.06); }
+  .intro-sub {
+    font-size: var(--text-md);
+    line-height: var(--text-md-lh);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-2);
+    max-width: 50ch;
   }
-  /* 纸页：从底部升起，占左 70%，不居中 */
-  .hero-paper {
-    position: relative;
-    z-index: 1;
-    margin: 0 0 0 0;
-    width: min(780px, 100%);
-    background: var(--field);
-    color: var(--field-ink);
-    padding: clamp(2rem, 5vw, 3.5rem) clamp(1.75rem, 4.5vw, 3.5rem) clamp(2rem, 4vw, 3rem);
-  }
-  .hero-title {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(2.6rem, 7vw, 5.2rem);
-    line-height: 1.02;
-    letter-spacing: -0.035em;
-    color: var(--field-ink);
-    margin: 0 0 1.3rem;
-  }
-  .hero-sub {
-    font-size: clamp(1.4rem, 3.2vw, 2.2rem);
-    font-weight: 700;
-    color: var(--field-muted);
-    letter-spacing: -0.02em;
-  }
-  .hero-note {
-    font-size: clamp(1.05rem, 1.6vw, 1.25rem);
-    line-height: 1.6;
-    color: var(--field-ink);
-    margin: 0 0 1.5rem;
-    max-width: 42ch;
-  }
-  .hero-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: 0.95rem;
-    color: var(--field-muted);
-    margin: 0 0 1.8rem;
-  }
-  .hero-actions {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-  }
-  .btn {
-    display: inline-block;
-    background: var(--field-ink);
-    color: var(--field);
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1.05rem;
-    line-height: 1.2;
-    padding: 1rem 1.9rem;
-    text-decoration: none;
-    border-radius: var(--radius);
-    min-height: 52px;
-    transition: transform 0.15s ease, background 0.15s ease;
-  }
-  .btn:hover { background: #000; transform: translateY(-2px); }
-  .btn:active { transform: translateY(0); }
-  .textlink {
-    color: var(--field-ink);
-    text-decoration: underline;
-    text-underline-offset: 4px;
-    font-size: 1.05rem;
-    font-weight: 500;
-  }
-
-  /* ===== Stats：超大数字 ===== */
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    padding: clamp(4rem, 8vw, 7rem) 0;
-  }
-  .stat { display: flex; flex-direction: column; gap: 0.6rem; }
-  .stat-num {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(3.5rem, 9vw, 7rem);
-    line-height: 0.95;
-    letter-spacing: -0.04em;
-    color: var(--ink);
+  .intro-stats {
+    font-size: var(--text-sm);
+    line-height: var(--text-sm-lh);
+    color: var(--text-tertiary);
+    margin: 0;
     font-variant-numeric: tabular-nums;
   }
-  .stat-date {
-    font-size: clamp(1.8rem, 4.5vw, 3.2rem);
-    letter-spacing: -0.03em;
-    white-space: nowrap;
-  }
-  .stat-label { color: var(--muted); font-size: 1rem; }
 
-  /* ===== 纸面区 ===== */
-  .categories, .recent { padding: clamp(2.5rem, 5vw, 4.5rem) 0; }
-  .sheet-head { margin-bottom: 1.5rem; }
-  .sheet-head h2 {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(1.8rem, 3.5vw, 2.4rem);
-    letter-spacing: -0.025em;
-    margin: 0 0 0.3rem;
+  /* ===== 区块通用 ===== */
+  .section {
+    margin-bottom: var(--space-10);
   }
-  .sheet-head p { color: var(--muted); margin: 0; font-size: 1rem; }
-
-  .cat-sheet, .recent-sheet {
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    background: var(--field);
-    color: var(--field-ink);
-  }
-  .cat-list { padding: clamp(1.8rem, 3vw, 2.8rem) clamp(1.8rem, 3vw, 3rem); }
-  .cat-row {
-    display: grid;
-    grid-template-columns: 160px 1fr auto;
+  .section-head {
+    display: flex;
+    justify-content: space-between;
     align-items: baseline;
-    gap: 1.5rem;
-    padding: 1.4rem 0.85rem;
-    text-decoration: none;
-    color: var(--field-ink);
-    border-bottom: 2px solid rgba(28, 21, 13, 0.12);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border-subtle);
   }
-  .cat-row:last-child { border-bottom: none; }
-  .cat-row:hover { background: rgba(28, 21, 13, 0.05); }
-  .cat-row:hover .cat-name { text-decoration: underline; text-underline-offset: 5px; }
-  .cat-name { font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; letter-spacing: -0.02em; }
-  .cat-desc { color: var(--field-ink); font-size: 1.02rem; line-height: 1.5; opacity: 0.85; }
-  .cat-count { font-family: var(--font-display); font-weight: 600; font-size: 0.95rem; color: var(--field-muted); }
+  .section-title {
+    font-size: var(--text-md);
+    line-height: var(--text-md-lh);
+    font-weight: var(--fw-semibold);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+  .section-more {
+    font-size: var(--text-sm);
+    line-height: var(--text-sm-lh);
+    font-weight: var(--fw-medium);
+    color: var(--brand-6);
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .section-more:hover { color: var(--brand-7); }
+  .section-more:focus-visible {
+    outline: 2px solid var(--brand-6);
+    outline-offset: 2px;
+  }
 
-  .sheet-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-  .recent-sheet { grid-template-columns: 380px 1fr; }
-  .post-list { list-style: none; margin: 0; padding: clamp(1.8rem, 3vw, 2.5rem) clamp(1.8rem, 3vw, 3rem); }
-  .post-item {
+  /* ===== 宫格分类卡片 ===== */
+  .cat-grid {
     display: grid;
-    grid-template-columns: 120px 1fr auto;
-    align-items: baseline;
-    gap: 1.5rem;
-    padding: 1.2rem 0.85rem;
-    text-decoration: none;
-    color: var(--field-ink);
-    border-bottom: 2px solid rgba(28, 21, 13, 0.12);
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
   }
-  .post-item:last-child { border-bottom: none; }
-  .post-item:hover { background: rgba(28, 21, 13, 0.05); }
-  .post-item:hover .post-title { text-decoration: underline; text-underline-offset: 4px; }
-  .post-date { font-family: var(--font-display); font-weight: 500; font-size: 0.95rem; color: var(--field-muted); }
-  .post-title { font-weight: 600; font-size: 1.2rem; letter-spacing: -0.01em; }
-  .post-cat { font-family: var(--font-display); font-weight: 500; font-size: 0.95rem; color: var(--field-muted); }
+  .cat-card {
+    background: var(--bg-container);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow var(--duration-base) var(--ease-standard);
+  }
+  .cat-card:hover {
+    box-shadow: var(--shadow-md);
+  }
+  .cat-card:focus-visible {
+    outline: 2px solid var(--brand-6);
+    outline-offset: 2px;
+  }
+  .cat-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--space-2);
+  }
+  .cat-card-name {
+    font-size: var(--text-md);
+    line-height: var(--text-md-lh);
+    font-weight: var(--fw-semibold);
+    color: var(--text-primary);
+  }
+  .cat-card-count {
+    font-size: var(--text-xs);
+    line-height: var(--text-xs-lh);
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+  .cat-card-desc {
+    font-size: var(--text-sm);
+    line-height: var(--text-sm-lh);
+    color: var(--text-secondary);
+    margin: 0;
+  }
 
-  /* 书库横幅 */
-  .band {
-    margin: clamp(2.5rem, 5vw, 4.5rem) 0;
-    height: clamp(200px, 32vw, 340px);
+  /* ===== 最近更新列表 ===== */
+  .recent-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background: var(--bg-container);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
     overflow: hidden;
-    max-width: 100%;
   }
-  .band img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: brightness(0.85);
+  .recent-item {
+    display: grid;
+    grid-template-columns: 100px 1fr auto;
+    align-items: baseline;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-5);
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background var(--duration-fast) var(--ease-standard);
+  }
+  .recent-item:last-child { border-bottom: none; }
+  .recent-item:hover { background: var(--bg-sunken); }
+  .recent-item:focus-visible {
+    outline: 2px solid var(--brand-6);
+    outline-offset: -2px;
+  }
+  .recent-date {
+    font-size: var(--text-sm);
+    line-height: var(--text-sm-lh);
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+  .recent-title {
+    font-size: var(--text-base);
+    line-height: var(--text-base-lh);
+    font-weight: var(--fw-medium);
+    color: var(--text-primary);
+  }
+  .recent-cat {
+    font-size: var(--text-xs);
+    line-height: var(--text-xs-lh);
+    color: var(--brand-6);
   }
 
-  /* ===== Entrance ===== */
-  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.8s ease, transform 0.8s ease; }
-  .reveal.in { opacity: 1; transform: none; }
-  .reveal-d { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
-  .reveal.in .reveal-d { opacity: 1; transform: none; }
-  .reveal.in .reveal-d:nth-child(2) { transition-delay: 0.1s; }
-  @media (prefers-reduced-motion: reduce) {
-    .hero-bg, .reveal, .reveal-d { opacity: 1; transform: none; animation: none; transition: none; }
+  @media (max-width: 900px) {
+    .cat-grid { grid-template-columns: repeat(2, 1fr); }
   }
-
-  @media (max-width: 820px) {
-    .hero { min-height: 100svh; align-items: stretch; }
-    .hero-paper {
-      align-self: flex-end;
-      width: 100%;
-      padding: 1.75rem 1.4rem 1.8rem;
+  @media (max-width: 640px) {
+    .cat-grid { grid-template-columns: 1fr; }
+    .recent-item {
+      grid-template-columns: 1fr auto;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
     }
-    .hero-scrim { background: linear-gradient(180deg, rgba(43,34,22,0.3) 0%, rgba(43,34,22,0.9) 70%); }
-
-    .stats { grid-template-columns: 1fr; gap: 2.2rem; padding: 3.5rem 0; }
-
-    .cat-sheet, .recent-sheet { grid-template-columns: 1fr; }
-    .sheet-img { height: 220px; }
-    .recent-sheet .sheet-img { order: -1; }
-    .cat-list, .post-list { padding: 1.4rem 1.25rem; }
-    .cat-row { grid-template-columns: 1fr auto; gap: 0.5rem 1rem; padding: 1.1rem 0; }
-    .cat-desc { grid-column: 1 / -1; }
-    .post-item { grid-template-columns: 1fr auto; gap: 0.4rem 1rem; padding: 1rem 0; }
-    .post-date { font-size: 0.85rem; }
+    .recent-date { grid-column: 1 / -1; order: 3; }
+    .recent-title { order: 1; }
+    .recent-cat { order: 2; }
   }
 </style>
-
-<script>
-  // 区块进入动画
-  const reveals = document.querySelectorAll('.reveal');
-  if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            e.target.classList.add('in');
-            io.unobserve(e.target);
-          }
-        }
-      },
-      { threshold: 0.12 }
-    );
-    reveals.forEach((el) => io.observe(el));
-  } else {
-    reveals.forEach((el) => el.classList.add('in'));
-  }
-</script>

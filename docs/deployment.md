@@ -4,16 +4,16 @@
 
 ## 当前状态（2026-10-24）
 
-- 仓库：`github.com/FuTao0907/meark-wiki`（public）
+- 仓库：`github.com/meark97/meark-wiki`（public）
 - 工作流：`.github/workflows/deploy.yml` 已就绪
-- 域名 DNS 已验证：`wiki.meark.cn` 与 `meark.cn` 均 CNAME → `futao0907.github.io`（阿里/腾讯 DoH 均已确认）
+- 域名 DNS：`wiki.meark.cn` CNAME → `meark97.github.io`（旧用户名域名残留待 DNS 切换清理）
 - **阻塞项：仓库的 GitHub Pages 尚未启用**，需一次浏览器操作（见下）
 
 ## 1. 启用 GitHub Pages（一次性，需在浏览器手动完成）
 
-云电脑浏览器不可用，请在任意能打开 GitHub 的设备上登录 `FuTao0907` 账号操作：
+请在任意能打开 GitHub 的设备上登录 `meark97` 账号操作：
 
-1. 打开 https://github.com/FuTao0907/meark-wiki/settings/pages
+1. 打开 https://github.com/meark97/meark-wiki/settings/pages
 2. **Build and deployment → Source** 选择 **GitHub Actions**
 3. 保存
 
@@ -32,9 +32,9 @@ Actions 工作流执行：checkout → setup-node 22 → yarn install → yarn b
 
 ## 3. 验证
 
-- Actions 页面：https://github.com/FuTao0907/meark-wiki/actions （build 绿、deploy 绿）
+- Actions 页面：https://github.com/meark97/meark-wiki/actions （build 绿、deploy 绿）
 - 访问 https://wiki.meark.cn 应看到首页
-- 访问 https://wiki.meark.cn/knowledge/hr/ 验证子路由
+- 访问 https://wiki.meark.cn/knowledge/frontend/ 验证子路由
 - 证书与域名由 GitHub Pages 自动处理（CNAME 文件已提交）
 
 ## 4. 故障排查
@@ -48,5 +48,5 @@ Actions 工作流执行：checkout → setup-node 22 → yarn install → yarn b
 
 ## 5. 域名（已配置，只读记录）
 
-- 注册商解析：`wiki.meark.cn` → CNAME → `futao0907.github.io`
-- `meark.cn` 主域同样指向 `futao0907.github.io`（供未来主站使用，不属于本项目范围）
+- 注册商解析：`wiki.meark.cn` → CNAME → `meark97.github.io`
+- `meark.cn` 主域同样指向 `meark97.github.io`（供未来主站使用，不属于本项目范围）

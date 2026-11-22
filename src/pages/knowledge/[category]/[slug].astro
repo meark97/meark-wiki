@@ -21,145 +21,293 @@ if (!post) {
   return Astro.redirect('/knowledge/');
 }
 
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+
+// 上一篇 / 下一篇（按日期倒序，索引减一为较新，加一为较旧）
+const sorted = [...all].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const idx = sorted.findIndex((p) => p.slug === post.slug);
+const newer = idx > 0 ? sorted[idx - 1] : null;
+const older = idx < sorted.length - 1 ? sorted[idx + 1] : null;
+
+// TOC：只取 h2/h3
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 ---
 
 <Base title={`${post.data.title} · meark-wiki`} activeCategory={category}>
-  <article class="paper">
+  <article class="article">
     <header class="article-head">
-      <p class="crumb">
-        <a href="/knowledge/">全部知识</a>
-        {' / '}
+      <nav class="crumb" aria-label="面包屑">
+        <a href="/knowledge/">全部</a>
+        <span class="crumb-sep">/</span>
         <a href={`/knowledge/${category}/`}>{catInfo?.name ?? category}</a>
-      </p>
-      <h1>{post.data.title}</h1>
-      {post.data.description && <p class="lede">{post.data.description}</p>}
-      <p class="meta">
+      </nav>
+      <h1 class="article-title">{post.data.title}</h1>
+      {post.data.description && <p class="article-desc">{post.data.description}</p>}
+      <p class="article-meta">
         <time datetime={post.data.pubDate.toISOString()}>
           {post.data.pubDate.toISOString().slice(0, 10)}
         </time>
         {post.data.updatedDate && (
           <>
-            {' · 更新于 '}
-            <time datetime={post.data.updatedDate.toISOString()}>
-              {post.data.updatedDate.toISOString().slice(0, 10)}
-            </time>
+            <span class="meta-sep">·</span>
+            <span>更新于 {post.data.updatedDate.toISOString().slice(0, 10)}</span>
           </>
         )}
         {post.data.tags.length > 0 && (
-          <span class="tags">{post.data.tags.map((t) => `#${t}`).join(' ')}</span>
+          <span class="article-tags">
+            {post.data.tags.map((t) => `#${t}`).join('  ')}
+          </span>
         )}
       </p>
     </header>
 
     <div class="article-body">
+      {toc.length > 1 && (
+        <nav class="toc" aria-label="目录">
+          <div class="toc-title">目录</div>
+          <ul>
+            {toc.map((h) => (
+              <li class:list={['toc-item', `toc-h${h.depth}`]}>
+                <a href={`#${h.slug}`}>{h.text}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
       <Content />
     </div>
 
+    <nav class="post-nav" aria-label="上一篇/下一篇">
+      {newer ? (
+        <a class="post-nav-item post-nav-prev" href={`/knowledge/${newer.slug}/`}>
+          <span class="post-nav-label">← 较新</span>
+          <span class="post-nav-title">{newer.data.title}</span>
+        </a>
+      ) : <span />}
+      {older ? (
+        <a class="post-nav-item post-nav-next" href={`/knowledge/${older.slug}/`}>
+          <span class="post-nav-label">较旧 →</span>
+          <span class="post-nav-title">{older.data.title}</span>
+        </a>
+      ) : <span />}
+    </nav>
+
     <footer class="article-foot">
-      <a href="/knowledge/" class="back-link">← 返回全部知识</a>
+      <a href={`/knowledge/${category}/`} class="back-link">← 返回{catInfo?.name ?? category}</a>
     </footer>
   </article>
 </Base>
 
 <style>
-  /* 文章 = 一张纸 */
-  .paper {
-    background: var(--field);
-    color: var(--field-ink);
-    padding: clamp(2rem, 6vw, 4rem) clamp(1.5rem, 7vw, 4.5rem) 3rem;
-    max-width: 800px;
-    margin: 0 auto;
+  .article {
+    max-width: 720px;
   }
 
-  .article-head { margin-bottom: 2.5rem; }
-  .crumb { color: var(--field-muted); font-size: 0.92rem; margin: 0 0 0.9rem; }
-  .crumb a { color: var(--field-muted); text-decoration: none; }
-  .crumb a:hover { color: var(--field-ink); text-decoration: underline; }
-  .article-head h1 {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(1.8rem, 4.5vw, 2.6rem);
-    line-height: 1.18;
-    letter-spacing: -0.02em;
-    margin: 0 0 0.9rem;
+  .article-head {
+    margin-bottom: var(--space-8);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid var(--border-subtle);
   }
-  .lede { font-size: 1.12rem; line-height: 1.6; color: var(--field-muted); margin: 0 0 0.8rem; }
-  .meta {
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: 0.88rem;
-    color: var(--field-muted);
-    margin: 0;
+  .crumb {
+    font-size: var(--text-sm);
+    line-height: var(--text-sm-lh);
+    color: var(--text-tertiary);
+    margin-bottom: var(--space-4);
   }
-  .tags { margin-left: 0.75rem; }
+  .crumb a {
+    color: var(--text-secondary);
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .crumb a:hover { color: var(--text-primary); }
+  .crumb-sep { margin: 0 var(--space-2); }
 
-  /* 正文排版（纸页上的墨色文字） */
-  .article-body :global(h2) {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 1.4rem;
+  .article-title {
+    font-size: var(--text-2xl);
+    line-height: var(--text-2xl-lh);
+    font-weight: var(--fw-semibold);
     letter-spacing: -0.01em;
-    margin: 2.4rem 0 0.8rem;
-    color: var(--field-ink);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-3);
+  }
+  .article-desc {
+    font-size: var(--text-md);
+    line-height: var(--text-md-lh);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-4);
+  }
+  .article-meta {
+    font-size: var(--text-sm);
+    line-height: var(--text-sm-lh);
+    color: var(--text-tertiary);
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .meta-sep { margin: 0 var(--space-2); }
+  .article-tags { margin-left: var(--space-3); }
+
+  /* 正文排版 */
+  .article-body {
+    font-size: var(--text-md);
+    line-height: 1.75;
+    color: var(--text-primary);
+  }
+  .article-body :global(h2) {
+    font-size: var(--text-xl);
+    line-height: var(--text-xl-lh);
+    font-weight: var(--fw-semibold);
+    margin: var(--space-10) 0 var(--space-3);
+    color: var(--text-primary);
   }
   .article-body :global(h3) {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1.15rem;
-    margin: 1.9rem 0 0.6rem;
-    color: var(--field-ink);
+    font-size: var(--text-lg);
+    line-height: var(--text-lg-lh);
+    font-weight: var(--fw-semibold);
+    margin: var(--space-8) 0 var(--space-2);
+    color: var(--text-primary);
   }
-  .article-body :global(p) { margin: 0 0 1.15rem; }
-  .article-body :global(ul), .article-body :global(ol) { margin: 0 0 1.15rem; padding-left: 1.5rem; }
-  .article-body :global(li) { margin-bottom: 0.4rem; }
-  .article-body :global(a) { color: var(--field-ink); text-decoration: underline; text-underline-offset: 3px; }
-  .article-body :global(strong) { font-weight: 700; }
+  .article-body :global(p) { margin: 0 0 var(--space-4); }
+  .article-body :global(ul),
+  .article-body :global(ol) {
+    margin: 0 0 var(--space-4);
+    padding-left: var(--space-6);
+  }
+  .article-body :global(li) { margin-bottom: var(--space-1); }
+  .article-body :global(a) {
+    color: var(--brand-6);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .article-body :global(a:hover) { color: var(--brand-7); }
+  .article-body :global(strong) { font-weight: var(--fw-semibold); }
   .article-body :global(blockquote) {
-    margin: 1.4rem 0;
-    padding: 0.25rem 0 0.25rem 1.1rem;
-    border-left: 3px solid var(--field-ink);
-    color: var(--field-muted);
-    font-style: italic;
+    margin: var(--space-5) 0;
+    padding: var(--space-2) 0 var(--space-2) var(--space-4);
+    border-left: 3px solid var(--brand-6);
+    color: var(--text-secondary);
   }
   .article-body :global(code) {
-    font-size: 0.92em;
-    background: rgba(28, 21, 13, 0.08);
-    padding: 0.15em 0.4em;
+    font-size: 0.875em;
+    background: var(--bg-sunken);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
     font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   }
   .article-body :global(pre) {
-    background: #201810;
-    color: #efe7d8;
-    padding: 1.3rem 1.5rem;
+    background: #1d2129;
+    color: #e6e8eb;
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
     overflow-x: auto;
-    margin: 0 0 1.3rem;
-    font-size: 0.92rem;
+    margin: 0 0 var(--space-4);
+    font-size: var(--text-sm);
     line-height: 1.6;
   }
-  .article-body :global(pre code) { background: transparent; padding: 0; }
-  .article-body :global(table) { border-collapse: collapse; width: 100%; margin: 0 0 1.3rem; font-size: 0.95rem; }
-  .article-body :global(th), .article-body :global(td) {
-    border: 1px solid rgba(28, 21, 13, 0.3);
-    padding: 0.55rem 0.8rem;
-    text-align: left;
-    vertical-align: top;
+  .article-body :global(pre code) {
+    background: transparent;
+    padding: 0;
+    color: inherit;
   }
-  .article-body :global(th) { background: rgba(28, 21, 13, 0.06); font-family: var(--font-display); font-weight: 600; }
-  .article-body :global(hr) { border: none; border-top: 2px solid rgba(28, 21, 13, 0.3); margin: 2.2rem 0; }
-  .article-body :global(img) { margin: 1.4rem 0; }
+  .article-body :global(table) {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0 0 var(--space-4);
+    font-size: var(--text-sm);
+  }
+  .article-body :global(th),
+  .article-body :global(td) {
+    padding: var(--space-2) var(--space-3);
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .article-body :global(th) {
+    font-weight: var(--fw-semibold);
+    background: var(--bg-sunken);
+  }
+  .article-body :global(hr) {
+    border: none;
+    border-top: 1px solid var(--border-subtle);
+    margin: var(--space-8) 0;
+  }
+  .article-body :global(img) {
+    margin: var(--space-5) 0;
+    border-radius: var(--radius-md);
+  }
+
+  /* ===== TOC ===== */
+  .toc {
+    background: var(--bg-sunken);
+    border-radius: var(--radius-md);
+    padding: var(--space-4) var(--space-5);
+    margin-bottom: var(--space-6);
+  }
+  .toc-title {
+    font-size: var(--text-sm);
+    font-weight: var(--fw-semibold);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-2);
+  }
+  .toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .toc-item a {
+    display: block;
+    font-size: var(--text-sm);
+    line-height: var(--text-sm-lh);
+    color: var(--text-secondary);
+    padding: var(--space-1) 0;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .toc-item a:hover { color: var(--brand-6); }
+  .toc-h3 { padding-left: var(--space-4); }
+
+  /* ===== 上一篇/下一篇 ===== */
+  .post-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    margin: var(--space-8) 0;
+  }
+  .post-nav-item {
+    display: block;
+    background: var(--bg-container);
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4);
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow var(--duration-base) var(--ease-standard);
+  }
+  .post-nav-item:hover { box-shadow: var(--shadow-md); }
+  .post-nav-next { text-align: right; }
+  .post-nav-label {
+    display: block;
+    font-size: var(--text-xs);
+    line-height: var(--text-xs-lh);
+    color: var(--text-tertiary);
+    margin-bottom: var(--space-1);
+  }
+  .post-nav-title {
+    display: block;
+    font-size: var(--text-sm);
+    line-height: var(--text-sm-lh);
+    font-weight: var(--fw-medium);
+    color: var(--text-primary);
+  }
 
   .article-foot {
-    margin-top: 3rem;
-    padding-top: 1.6rem;
-    border-top: 2px solid rgba(28, 21, 13, 0.3);
+    margin-top: var(--space-10);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border-subtle);
   }
-  .back-link { color: var(--field-muted); text-decoration: none; font-size: 0.95rem; }
-  .back-link:hover { color: var(--field-ink); text-decoration: underline; }
-
-  @media (max-width: 640px) {
-    .paper { margin: 0 -0.5rem; }
-    .article-head h1 { font-size: 1.6rem; }
-    .meta { font-size: 0.82rem; }
+  .back-link {
+    font-size: var(--text-sm);
+    font-weight: var(--fw-medium);
+    color: var(--brand-6);
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .back-link:hover { color: var(--brand-7); }
+  .back-link:focus-visible {
+    outline: 2px solid var(--brand-6);
+    outline-offset: 2px;
   }
 </style>

@@ -9,13 +9,13 @@
 ### 第 1 步：本地安装环境
 
 1. 安装 Node.js LTS（≥ 22，当前 v22.23.x 即可）
-2. 安装 Yarn 1.x：`npm i -g yarn@1`
+2. 启用 Yarn 1.x：`corepack enable && corepack prepare yarn@1.22.22 --activate`
 3. 安装 Git（Windows 建议用 PowerShell 7 操作，避免 5.1 的编码问题）
 
 ### 第 2 步：克隆仓库
 
 ```powershell
-git clone https://github.com/FuTao0907/meark-wiki.git
+git clone https://github.com/meark97/meark-wiki.git
 cd meark-wiki
 yarn install
 yarn dev   # 打开 http://localhost:4321 确认可运行
@@ -24,8 +24,8 @@ yarn dev   # 打开 http://localhost:4321 确认可运行
 ### 第 3 步：配置 GitHub 推送凭据（本地推送用）
 
 ```powershell
-git config user.name "FuTao0907"
-git config user.email "FuTao0907@users.noreply.github.com"
+git config user.name "meark97"
+git config user.email "meark97@users.noreply.github.com"
 # 推送时选择 HTTPS + Personal Access Token，或配置 SSH
 ```
 
@@ -33,7 +33,7 @@ git config user.email "FuTao0907@users.noreply.github.com"
 
 ## 备选：整目录拷贝（离线场景）
 
-云电脑工作区目录：`/home/user/Doubao/chats/38449082098158594/meark-wiki/`
+原云电脑工作区目录：项目根目录（`meark-wiki/`），离线拷贝时按当前本地仓库目录为准
 
 拷贝以下内容到本地即可（**不要拷贝** `node_modules/`、`dist/`）：
 

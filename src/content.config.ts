@@ -4,7 +4,7 @@ import { defineCollection, z } from 'astro:content';
  * 知识库内容集合
  *
  * 文章存放：src/content/knowledge/<分类>/<文章名>.md
- * 分类即目录名：hr（人事行政）/ frontend（前端技术）/ ai-tools（AI 与工具）/ general（通用知识）
+ * 分类即目录名：frontend（前端技术）/ ai-tools（AI 与工具）/ general（通用知识）
  *
  * 每篇文章 frontmatter 必填字段：
  *   title       文章标题

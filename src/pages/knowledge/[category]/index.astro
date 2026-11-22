@@ -17,76 +17,112 @@ const posts = (await getCollection('knowledge'))
 
 <Base title={`${info?.name ?? category} · meark-wiki`} activeCategory={category}>
   <section class="page-head">
-    <p class="crumb"><a href="/knowledge/">全部知识</a></p>
-    <h1>{info?.name ?? category}</h1>
-    {info && <p class="desc">{info.description}</p>}
+    <nav class="crumb" aria-label="面包屑">
+      <a href="/knowledge/">全部</a>
+      <span class="crumb-sep">/</span>
+      <span>{info?.name ?? category}</span>
+    </nav>
+    <h1 class="page-title">{info?.name ?? category}</h1>
+    {info && <p class="page-desc">{info.description}</p>}
   </section>
 
-  <div class="paper">
-    <p class="count">{posts.length} 篇</p>
-    <ul class="post-list">
-      {posts.map((p) => (
-        <li>
-          <a class="post-item" href={`/knowledge/${category}/${p.slug.split('/').slice(1).join('/')}/`}>
-            <span class="post-date">{p.data.pubDate.toISOString().slice(0, 10)}</span>
-            <span class="post-title">{p.data.title}</span>
-            {p.data.tags.length > 0 && <span class="post-tags">{p.data.tags.join(' · ')}</span>}
-          </a>
-        </li>
-      ))}
-    </ul>
-  </div>
+  <ul class="post-list">
+    {posts.map((p) => (
+      <li>
+        <a class="post-item" href={`/knowledge/${category}/${p.slug.split('/').slice(1).join('/')}/`}>
+          <span class="post-date">{p.data.pubDate.toISOString().slice(0, 10)}</span>
+          <span class="post-title">{p.data.title}</span>
+          {p.data.tags.length > 0 && (
+            <span class="post-tags">{p.data.tags.map((t) => `#${t}`).join('  ')}</span>
+          )}
+        </a>
+      </li>
+    ))}
+  </ul>
 </Base>
 
 <style>
-  .page-head { margin-bottom: 2rem; }
-  .crumb { color: var(--muted); font-size: 0.92rem; margin: 0 0 0.75rem; }
-  .crumb a { color: var(--muted); text-decoration: none; }
-  .crumb a:hover { color: var(--ink); text-decoration: underline; }
-  .page-head h1 {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(2rem, 5vw, 3rem);
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-    margin: 0 0 0.5rem;
+  .page-head {
+    margin-bottom: var(--space-8);
   }
-  .page-head .desc { color: var(--muted); margin: 0; }
+  .crumb {
+    font-size: var(--text-sm);
+    line-height: var(--text-sm-lh);
+    color: var(--text-tertiary);
+    margin-bottom: var(--space-3);
+  }
+  .crumb a {
+    color: var(--text-secondary);
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .crumb a:hover { color: var(--text-primary); }
+  .crumb-sep { margin: 0 var(--space-2); }
+  .page-title {
+    font-size: var(--text-2xl);
+    line-height: var(--text-2xl-lh);
+    font-weight: var(--fw-semibold);
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+    margin: 0 0 var(--space-2);
+  }
+  .page-desc {
+    font-size: var(--text-md);
+    line-height: var(--text-md-lh);
+    color: var(--text-secondary);
+    margin: 0;
+  }
 
-  /* 一张纸 */
-  .paper {
-    background: var(--field);
-    color: var(--field-ink);
-    padding: 2rem 2.25rem 1.6rem;
-    max-width: 860px;
+  .post-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background: var(--bg-container);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
+    overflow: hidden;
   }
-  .count {
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: 0.9rem;
-    color: var(--field-muted);
-    margin: 0 0 0.5rem;
-  }
-  .post-list { list-style: none; margin: 0; padding: 0; }
   .post-item {
     display: grid;
-    grid-template-columns: 110px 1fr auto;
+    grid-template-columns: 100px 1fr auto;
     align-items: baseline;
-    gap: 1.25rem;
-    padding: 0.95rem 0.75rem;
-    text-decoration: none;
-    color: var(--field-ink);
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background var(--duration-fast) var(--ease-standard);
   }
-  .post-item:hover { background: rgba(28, 21, 13, 0.06); }
-  .post-item:last-child { padding-bottom: 0.3rem; }
-  .post-item:hover .post-title { text-decoration: underline; text-underline-offset: 4px; }
-  .post-date { font-family: var(--font-display); font-weight: 500; font-size: 0.88rem; color: var(--field-muted); }
-  .post-title { font-weight: 600; font-size: 1.05rem; }
-  .post-tags { font-family: var(--font-display); font-weight: 500; font-size: 0.82rem; color: var(--field-muted); }
+  .post-item:last-child { border-bottom: none; }
+  .post-item:hover { background: var(--bg-sunken); }
+  .post-item:focus-visible {
+    outline: 2px solid var(--brand-6);
+    outline-offset: -2px;
+  }
+  .post-date {
+    font-size: var(--text-sm);
+    line-height: var(--text-sm-lh);
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+  .post-title {
+    font-size: var(--text-base);
+    line-height: var(--text-base-lh);
+    font-weight: var(--fw-medium);
+    color: var(--text-primary);
+  }
+  .post-tags {
+    font-size: var(--text-xs);
+    line-height: var(--text-xs-lh);
+    color: var(--text-tertiary);
+    white-space: nowrap;
+  }
 
   @media (max-width: 640px) {
-    .paper { padding: 1.4rem 1.25rem 1.2rem; }
-    .post-item { grid-template-columns: 1fr auto; }
-    .post-date { font-size: 0.82rem; }
+    .post-item {
+      grid-template-columns: 1fr auto;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+    }
+    .post-date { grid-column: 1 / -1; order: 3; }
+    .post-title { order: 1; }
+    .post-tags { order: 2; }
   }
 </style>
